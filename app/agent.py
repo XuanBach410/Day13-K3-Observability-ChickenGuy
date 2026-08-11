@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import dataclass
 
@@ -8,7 +9,7 @@ from .mock_llm import FakeLLM
 from .mock_rag import retrieve
 from .pii import hash_user_id, summarize_text
 from .prompt_management import resolve_prompt
-from .tracing import get_langfuse_client, observe, tracing_enabled
+from .tracing import get_langfuse_client, observe, trace_attributes, tracing_enabled
 
 
 @dataclass
@@ -26,52 +27,74 @@ class LabAgent:
         self.model = model
         self.llm = FakeLLM(model=model)
 
-    @observe(as_type="generation", capture_input=False, capture_output=False)
+    @observe(name="chat-turn", as_type="span", capture_input=False, capture_output=False)
     def run(self, user_id: str, feature: str, session_id: str, message: str) -> AgentResult:
         started = time.perf_counter()
-        docs = retrieve(message)
         langfuse_client = get_langfuse_client()
-        prompt = resolve_prompt(
-            langfuse_client,
-            feature=feature,
-            docs=docs,
-            message=message,
-            enabled=tracing_enabled(),
-        )
-        response = self.llm.generate(prompt.text)
-        quality_score = self._heuristic_quality(message, response.text, docs)
-        latency_ms = int((time.perf_counter() - started) * 1000)
-        cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
+        update_current_span = getattr(langfuse_client, "update_current_span", None)
+        user_id_hash = hash_user_id(user_id)
 
-        langfuse_client.update_current_trace(
-            user_id=hash_user_id(user_id),
+        with trace_attributes(
+            user_id=user_id_hash,
             session_id=session_id,
             tags=["lab", feature, self.model],
+            trace_name="chat-turn",
             metadata={
-                "prompt_name": prompt.name,
-                "prompt_label": prompt.label,
-                "prompt_version": prompt.version,
-                "prompt_source": prompt.source,
+                "feature": feature,
+                "app_env": os.getenv("APP_ENV", "dev"),
             },
-        )
-        langfuse_client.update_current_generation(
-            model=self.model,
-            metadata={
-                "doc_count": len(docs),
-                "query_preview": summarize_text(message),
-                "prompt_name": prompt.name,
-                "prompt_label": prompt.label,
-                "prompt_version": prompt.version,
-                "prompt_source": prompt.source,
-                "prompt_fetch_error": prompt.fetch_error,
-            },
-            usage_details={
-                "prompt_tokens": response.usage.input_tokens,
-                "completion_tokens": response.usage.output_tokens,
-            },
-            cost_details={"total": cost_usd},
-            prompt=prompt.managed_prompt,
-        )
+            version=os.getenv("APP_VERSION", "day13-lab"),
+            environment=os.getenv("APP_ENV", "dev"),
+        ):
+            if callable(update_current_span):
+                update_current_span(input={"feature": feature, "message_preview": summarize_text(message)})
+
+            docs = retrieve(message)
+            prompt = resolve_prompt(
+                langfuse_client,
+                feature=feature,
+                docs=docs,
+                message=message,
+                enabled=tracing_enabled(),
+            )
+            response = self.llm.generate(
+                prompt.text,
+                prompt_obj=prompt.managed_prompt,
+                prompt_context={
+                    "prompt_name": prompt.name,
+                    "prompt_label": prompt.label,
+                    "prompt_version": prompt.version,
+                    "prompt_source": prompt.source,
+                    "prompt_fetch_error": prompt.fetch_error,
+                },
+                langfuse_client=langfuse_client,
+            )
+            quality_score = self._heuristic_quality(message, response.text, docs)
+            latency_ms = int((time.perf_counter() - started) * 1000)
+            cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
+
+            langfuse_client.update_current_trace(
+                metadata={
+                    "prompt_name": prompt.name,
+                    "prompt_label": prompt.label,
+                    "prompt_version": prompt.version,
+                    "prompt_source": prompt.source,
+                }
+            )
+            if callable(update_current_span):
+                update_current_span(
+                    output={"answer_preview": summarize_text(response.text)},
+                    metadata={
+                        "doc_count": len(docs),
+                        "prompt_name": prompt.name,
+                        "prompt_label": prompt.label,
+                        "prompt_version": prompt.version,
+                        "prompt_source": prompt.source,
+                        "prompt_fetch_error": prompt.fetch_error,
+                        "latency_ms": latency_ms,
+                        "quality_score": quality_score,
+                    },
+                )
 
         metrics.record_request(
             latency_ms=latency_ms,

@@ -42,6 +42,16 @@ async def startup() -> None:
     )
 
 
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    if not tracing_enabled():
+        return
+    try:
+        get_langfuse_client().flush()
+    except Exception as exc:  # pragma: no cover - best effort on shutdown
+        log.warning("langfuse_flush_failed", service="api", payload={"error_type": type(exc).__name__})
+
+
 @app.get("/health")
 async def health() -> dict:
     return {"ok": True, "tracing_enabled": tracing_enabled(), "incidents": status()}

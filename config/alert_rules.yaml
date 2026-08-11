@@ -1,19 +1,41 @@
 alerts:
-  - name: high_latency_p95
+  - name: latency_p95_slo_breach
     severity: critical
-    condition: p95(latency_ms) > 3000ms for 5m
+    metric: latency_p95_ms
+    operator: gt
+    threshold: 3000
+    condition: latency_p95_ms > 3000 for 5m
+    duration: 5m
     type: symptom-based
-    owner: Phạm Thị Phương Linh
-    runbook: docs/alerts.md#alert-1-high-latency-p95
-  - name: high_error_rate
+    owner: dashboard-slo-alert
+    runbook: docs/alerts.md#latency-p95-slo-breach
+  - name: error_rate_slo_breach
+    severity: critical
+    metric: error_rate_pct
+    operator: gt
+    threshold: 2
+    condition: error_rate_pct > 2 for 5m
+    duration: 5m
+    type: symptom-based
+    owner: dashboard-slo-alert
+    runbook: docs/alerts.md#error-rate-slo-breach
+  - name: daily_cost_slo_breach
     severity: warning
-    condition: error_rate_pct > 2% for 5m
+    metric: daily_cost_usd
+    operator: gt
+    threshold: 2.5
+    condition: daily_cost_usd > 2.5 for 15m
+    duration: 15m
     type: symptom-based
-    owner: Phạm Thị Phương Linh
-    runbook: docs/alerts.md#alert-2-high-error-rate
-  - name: quality_drop
+    owner: dashboard-slo-alert
+    runbook: docs/alerts.md#daily-cost-slo-breach
+  - name: quality_score_slo_breach
     severity: warning
-    condition: mean(quality_score) < 0.75 for 10m
+    metric: quality_score_avg
+    operator: lt
+    threshold: 0.75
+    condition: quality_score_avg < 0.75 for 10m
+    duration: 10m
     type: symptom-based
-    owner: Phạm Thị Phương Linh
-    runbook: docs/alerts.md#alert-3-quality-drop
+    owner: dashboard-slo-alert
+    runbook: docs/alerts.md#quality-score-slo-breach

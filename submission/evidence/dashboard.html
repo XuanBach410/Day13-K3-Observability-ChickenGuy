@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="30">
+  <title>Day 13 AI Observability</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #f6f7f9; color: #1f2933; }
+    header { margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+    .panel { background: white; border: 1px solid #d8dee6; border-left: 5px solid #2f80ed; border-radius: 6px; padding: 14px; }
+    .panel.breach { border-left-color: #c8372d; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    h2 { margin: 0 0 8px; font-size: 17px; }
+    .meta, .threshold { color: #52616b; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #edf0f3; padding: 7px 4px; text-align: left; vertical-align: top; }
+    th { width: 38%; color: #52616b; font-weight: 600; }
+    .ok { color: #176b3a; font-weight: 700; }
+    .breach, .firing { color: #a32418; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Day 13 AI Observability</h1>
+    <div class="meta">Source: C:\Users\phamt\OneDrive\Desktop\LAB-VIN\Day13-K3-Observability-ChickenGuy\data\logs.jsonl | Time range: 60m | Refresh: 30s | Records: 8</div>
+  </header>
+  <main class="grid">
+            <section class="panel ok">
+              <h2>Latency percentiles</h2>
+              <p class="meta">Unit: ms | Time range: 60m</p>
+              <table><tr><th>p50</th><td>420</td></tr><tr><th>p95</th><td>980</td></tr><tr><th>p99</th><td>980</td></tr></table>
+              <p class="threshold">Threshold: p95 lte 3000</p>
+            </section>
+            
+            <section class="panel ok">
+              <h2>Request traffic</h2>
+              <p class="meta">Unit: requests_per_minute | Time range: 60m</p>
+              <table><tr><th>count</th><td>4</td></tr><tr><th>rate_per_minute</th><td>2</td></tr><tr><th>series</th><td>{&quot;2026-08-11T03:00:00Z&quot;: 2, &quot;2026-08-11T03:01:00Z&quot;: 2}</td></tr></table>
+              <p class="threshold">Threshold: rate_per_minute gte 1</p>
+            </section>
+            
+            <section class="panel ok">
+              <h2>Error rate and breakdown</h2>
+              <p class="meta">Unit: percent | Time range: 60m</p>
+              <table><tr><th>error_rate_pct</th><td>0</td></tr><tr><th>count_by_value</th><td>{}</td></tr></table>
+              <p class="threshold">Threshold: error_rate_pct lte 2</p>
+            </section>
+            
+            <section class="panel ok">
+              <h2>Cost over time</h2>
+              <p class="meta">Unit: usd | Time range: 60m</p>
+              <table><tr><th>total</th><td>0.0083</td></tr><tr><th>sum_by_minute</th><td>{&quot;2026-08-11T03:00:00Z&quot;: 0.003936, &quot;2026-08-11T03:01:00Z&quot;: 0.004368}</td></tr></table>
+              <p class="threshold">Threshold: total lte 2.5</p>
+            </section>
+            
+            <section class="panel ok">
+              <h2>Input and output tokens</h2>
+              <p class="meta">Unit: tokens | Time range: 60m</p>
+              <table><tr><th>tokens_in</th><td>598</td></tr><tr><th>tokens_out</th><td>1010</td></tr></table>
+              <p class="threshold">Threshold: sum_by_field lte 50000</p>
+            </section>
+            
+            <section class="panel ok">
+              <h2>Quality proxy</h2>
+              <p class="meta">Unit: score_0_to_1 | Time range: 60m</p>
+              <table><tr><th>mean</th><td>0.8775</td></tr></table>
+              <p class="threshold">Threshold: mean gte 0.75</p>
+            </section>
+            </main>
+  <section>
+    <h2>SLO Status</h2>
+    <table><tr><th>SLO</th><th>Current</th><th>Objective</th><th>Status</th></tr><tr><td>latency_p95_ms</td><td>980</td><td>lte 3000.0</td><td class='ok'>ok</td></tr><tr><td>error_rate_pct</td><td>0</td><td>lte 2.0</td><td class='ok'>ok</td></tr><tr><td>daily_cost_usd</td><td>0.0083</td><td>lte 2.5</td><td class='ok'>ok</td></tr><tr><td>quality_score_avg</td><td>0.8775</td><td>gte 0.75</td><td class='ok'>ok</td></tr></table>
+  </section>
+  <section>
+    <h2>Alerts</h2>
+    <table><tr><th>Name</th><th>Severity</th><th>Metric</th><th>Current</th><th>Condition</th><th>Status</th><th>Runbook</th></tr><tr><td>latency_p95_slo_breach</td><td>critical</td><td>latency_p95_ms</td><td>980</td><td>gt</td><td class='ok'>ok</td><td>docs/alerts.md#latency-p95-slo-breach</td></tr><tr><td>error_rate_slo_breach</td><td>critical</td><td>error_rate_pct</td><td>0</td><td>gt</td><td class='ok'>ok</td><td>docs/alerts.md#error-rate-slo-breach</td></tr><tr><td>daily_cost_slo_breach</td><td>warning</td><td>daily_cost_usd</td><td>0.0083</td><td>gt</td><td class='ok'>ok</td><td>docs/alerts.md#daily-cost-slo-breach</td></tr><tr><td>quality_score_slo_breach</td><td>warning</td><td>quality_score_avg</td><td>0.8775</td><td>lt</td><td class='ok'>ok</td><td>docs/alerts.md#quality-score-slo-breach</td></tr></table>
+  </section>
+</body>
+</html>

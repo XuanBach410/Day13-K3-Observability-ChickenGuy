@@ -2,15 +2,26 @@ service: day13-observability-lab
 window: 28d
 slis:
   latency_p95_ms:
+    metric: response_sent.latency_ms
+    operator: lte
     objective: 3000
     target: 99.5
-    note: Replace with your group's target
+    condition: P95 latency must be less than or equal to 3000 ms
   error_rate_pct:
+    metric: request_failed / request_received * 100
+    operator: lte
     objective: 2
     target: 99.0
+    condition: Error rate must be less than or equal to 2 percent
   daily_cost_usd:
+    metric: sum(response_sent.cost_usd)
+    operator: lte
     objective: 2.5
     target: 100.0
+    condition: Total evaluated cost must be less than or equal to 2.5 USD
   quality_score_avg:
+    metric: mean(response_sent.quality_score)
+    operator: gte
     objective: 0.75
     target: 95.0
+    condition: Average quality score must be greater than or equal to 0.75
