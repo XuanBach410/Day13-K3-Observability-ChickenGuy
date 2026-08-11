@@ -34,9 +34,9 @@ cp .env.example .env
 Ưu tiên project dùng chung do Lab Coach cung cấp hoặc Langfuse Cloud. Điền host và key của project vào `.env`:
 
 ```dotenv
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
-LANGFUSE_HOST=https://cloud.langfuse.com
+LANGFUSE_SECRET_KEY="sk-lf-3817ff11-2c0d-45cb-be44-001c1bd39cd8"
+LANGFUSE_PUBLIC_KEY="pk-lf-dde048cf-004e-4b81-86f8-b751f7f5d339"
+LANGFUSE_BASE_URL="https://cloud.langfuse.com"
 LANGFUSE_PROMPT_NAME=day13-chat
 LANGFUSE_PROMPT_LABEL=production
 ```
