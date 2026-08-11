@@ -4,7 +4,7 @@
 
 - **Tên nhóm**: ChickenGuy
 - **Repository URL**: https://github.com/XuanBach410/Day13-K3-Observability-ChickenGuy
-- **Commit SHA cuối**: `4616fd50859c35390f24df5ee49a98b3381f7533`
+- **Commit SHA cuối**: `be5eee3e5eba01f7fbc06049d00f2ec47aedf60d`
 - **Thành viên và vai trò**:
   1. **Trần Xuân Bách** — Nhóm trưởng, Integration Lead & Structured Logging (Correlation ID, contextvars, request lifecycle, trace metadata propagation).
   2. **Đinh Hoài Nam** — PII & Security Specialist (PII detection regex, recursive `scrub_event` processor, secret hygiene audit).
