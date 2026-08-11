@@ -31,5 +31,5 @@ def test_scrub_passport() -> None:
 def test_scrub_address() -> None:
     out = scrub_text("I live at 123 đường Nguyễn Trãi")
     assert "123 đường Nguyễn Trãi" not in out
-    assert "REDACTED_ADDRESS" in out
+    assert "REDACTED_ADDRESS_VN" in out
 
