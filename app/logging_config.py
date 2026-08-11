@@ -29,14 +29,12 @@ def _scrub_value(val: Any) -> Any:
     if isinstance(val, dict):
         return {k: _scrub_value(v) for k, v in val.items()}
     if isinstance(val, list):
-        return [_scrub_value(v) for v in val]
+        return [_scrub_value(item) for item in val]
     return val
 
 
 def scrub_event(_: Any, __: str, event_dict: dict[str, Any]) -> dict[str, Any]:
-    for key, value in list(event_dict.items()):
-        event_dict[key] = _scrub_value(value)
-    return event_dict
+    return _scrub_value(event_dict)
 
 
 
@@ -47,7 +45,6 @@ def configure_logging() -> None:
             merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso", utc=True, key="ts"),
-            # TODO: Register your PII scrubbing processor here
             scrub_event,
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
