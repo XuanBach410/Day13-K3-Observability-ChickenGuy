@@ -11,27 +11,18 @@ try:
     get_client = getattr(langfuse, "get_client")
 
     _observe = getattr(langfuse, "observe", None)
-    _propagate_attributes = getattr(langfuse, "propagate_attributes", None)
-
-    if _observe is None or _propagate_attributes is None:
-        try:
-            from langfuse import decorators as _langfuse_decorators  # type: ignore[attr-defined]
-
-            _observe = _observe or getattr(_langfuse_decorators, "observe", None)
-            _propagate_attributes = _propagate_attributes or getattr(
-                _langfuse_decorators, "propagate_attributes", None
-            )
-        except Exception:
-            pass
-
-    if _observe is None or _propagate_attributes is None:
-        raise ImportError("Langfuse observe/propagate_attributes APIs are unavailable")
+    if _observe is None:
+        raise ImportError("Langfuse observe API is unavailable")
 
     observe = _observe
-    propagate_attributes = _propagate_attributes
-
-    if not hasattr(langfuse, "observe"):
-        setattr(langfuse, "observe", observe)
+    _propagate_attributes = getattr(langfuse, "propagate_attributes", None)
+    if _propagate_attributes is None:
+        @contextmanager
+        def _dummy_propagate(**kwargs: Any):
+            yield
+        propagate_attributes = _dummy_propagate
+    else:
+        propagate_attributes = _propagate_attributes
 
     LANGFUSE_SDK_AVAILABLE = True
 except Exception:  # pragma: no cover - chỉ dùng khi chưa cài requirements
