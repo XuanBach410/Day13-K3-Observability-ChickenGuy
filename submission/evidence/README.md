@@ -24,9 +24,9 @@ Danh mục bằng chứng tự động và hướng dẫn chụp screenshot UI c
 | `08_prompt_v2_trace.png` | Trace hiển thị metadata `prompt_name=day13-chat`, `prompt_label=candidate`, `prompt_version=2` | Prompt Versioning v2 | Ready on Langfuse UI |
 | `09_prompt_rollback.png` | Screenshot thao tác chuyển label `production` về version 1 hoặc rollback prompt | Prompt Rollback | Ready on Langfuse UI |
 | `11_dashboard_6_panels.png` | Dashboard 6 panels (Latency, Traffic, Errors, Cost, Tokens, Quality) dựng từ `data/logs.jsonl` hiển thị rõ threshold/SLO lines | Dashboard | SAVED (.png) |
-| `12_challenge_metrics.png` | Dashboard/Metric graph thể hiện Latency P95 spike > 2000ms khi bật incident `rag_slow` cho feature `refund` | Challenge Incident | Ready on Dashboard UI |
-| `13_challenge_trace.png` | Langfuse trace thể hiện span retrieval bị trễ ~2500ms khi `rag_slow` active | Challenge Trace | Ready on Langfuse UI |
-| `14_challenge_logs.png` | Log line chứa `correlation_id` của challenge request bị chậm | Challenge Log Evidence | Ready in `data/logs.jsonl` |
+| `12_challenge_metrics.png` | Dashboard/Metric graph thể hiện Latency P95 spike > 2000ms khi bật incident `rag_slow` cho feature `refund` | Challenge Incident | SAVED (.png) |
+| `13_challenge_trace.png` | Langfuse trace thể hiện span retrieval bị trễ ~2500ms khi `rag_slow` active | Challenge Trace | SAVED (.png) |
+| `14_challenge_logs.png` | Log line chứa `correlation_id` của challenge request bị chậm | Challenge Log Evidence | SAVED (.png) |
 
 ---
 

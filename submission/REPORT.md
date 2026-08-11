@@ -63,12 +63,12 @@
 
 - **Challenge ID**: `day13-k3-observability-v1` (Cohort K3, Seed 1303, Latency Threshold: 2000ms, Affected Feature: `refund`).
 - **Triệu chứng từ metrics**:
-  - Trong quá trình chạy load test với bộ câu hỏi `config/challenge.json`, chỉ số Latency P95 của feature `refund` tăng đột biến lên **2657ms–2663ms**, vượt ngưỡng SLO (2000ms).
-- **Trace ID liên quan**: Trace ID thu thập từ Langfuse có `tags=["lab", "refund", "claude-sonnet-4-5"]` với tổng duration ~2.66s.
+  - Trong quá trình chạy load test với bộ câu hỏi `config/challenge.json`, chỉ số Latency P95 của feature `refund` tăng đột biến lên **2657ms–3446ms**, vượt ngưỡng SLO (2000ms). Xem ảnh bằng chứng: [12_challenge_metrics.png](file:///Users/tranxuanbach/Documents/Documents/CODE/ALTHUCCHIEN%20/LABS/Day13-K3-Observability-ChickenGuy/submission/evidence/12_challenge_metrics.png).
+- **Trace ID liên quan**: Trace ID thu thập từ Langfuse có `tags=["lab", "refund", "claude-sonnet-4-5"]` với tổng duration ~2.66s. Xem ảnh bằng chứng: [13_challenge_trace.png](file:///Users/tranxuanbach/Documents/Documents/CODE/ALTHUCCHIEN%20/LABS/Day13-K3-Observability-ChickenGuy/submission/evidence/13_challenge_trace.png).
 - **Log line/correlation ID liên quan**:
-  - Log correlation IDs: `req-469fd94f`, `req-5c8b783f`, `req-45ccb790`, `req-7e7da748`, `req-b21f3a7c`.
+  - Log correlation IDs: `req-469fd94f`, `req-5c8b783f`, `req-45ccb790`, `req-7e7da748`, `req-b21f3a7c`. Xem ảnh bằng chứng: [14_challenge_logs.png](file:///Users/tranxuanbach/Documents/Documents/CODE/ALTHUCCHIEN%20/LABS/Day13-K3-Observability-ChickenGuy/submission/evidence/14_challenge_logs.png).
   - Mẫu log line:
-    `{"service": "api", "latency_ms": 2657, "tokens_in": 31, "tokens_out": 146, "cost_usd": 0.002283, "quality_score": 0.9, "payload": {"answer_preview": "Starter answer..."}, "event": "response_sent", "session_id": "k3-challenge-s02", "feature": "refund", "model": "claude-sonnet-4-5", "correlation_id": "req-5c8b783f", "user_id_hash": "867738e76862", "level": "info", "ts": "2026-08-11T03:07:04.252069Z"}`
+    `{"service": "api", "latency_ms": 2658, "tokens_in": 29, "tokens_out": 123, "cost_usd": 0.001932, "quality_score": 0.9, "payload": {"answer_preview": "Starter answer..."}, "event": "response_sent", "session_id": "k3-challenge-s01", "feature": "refund", "model": "claude-sonnet-4-5", "correlation_id": "req-469fd94f", "user_id_hash": "026c7a407135", "level": "info", "ts": "2026-08-11T03:07:01.589266Z"}`
 - **Root cause**:
   - Span `retrieve` gặp sự cố độ trễ do incident `rag_slow` bị kích hoạt trong bộ giả lập `app/mock_rag.py` (khi `STATE["rag_slow"] = True`, hàm `retrieve()` bị delay nhân tạo 2.5 giây).
 - **Fix action**:
