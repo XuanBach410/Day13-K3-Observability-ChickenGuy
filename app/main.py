@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from structlog.contextvars import bind_contextvars
 
 from .agent import LabAgent
@@ -30,6 +31,12 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
         content={"detail": type(exc).__name__},
         headers={"x-request-id": correlation_id},
     )
+
+
+@app.get("/")
+async def get_ui() -> HTMLResponse:
+    html_path = Path(__file__).parent / "ui.html"
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
 
 
 @app.on_event("startup")

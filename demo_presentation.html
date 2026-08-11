@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo: K3 Observability - Team ChickenGuy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15), transparent 25%);
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        /* Abstract glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(99, 102, 241, 0.2);
+            top: -100px;
+            left: -100px;
+        }
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: rgba(236, 72, 153, 0.2);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .progress-indicator {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--glass-bg);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Slide Container */
+        .slider-container {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 85%;
+            height: 85%;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px) scale(0.95) rotateX(-5deg);
+            transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            gap: 2rem;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1) rotateX(0);
+            z-index: 5;
+        }
+
+        .slide.prev {
+            transform: translateY(-30px) scale(0.95) rotateX(5deg);
+        }
+
+        /* Content Areas */
+        .visual-panel {
+            flex: 1.2;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-panel img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+            object-fit: contain;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .visual-panel img:hover {
+            transform: scale(1.02);
+        }
+
+        .visual-panel iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+            background: white; /* Dashboard html is light mode */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .script-panel {
+            flex: 0.8;
+            background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .step-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .script-content {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            flex-grow: 1;
+        }
+
+        .script-content strong {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .quote-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin-top: 1.5rem;
+            font-style: italic;
+            color: #e2e8f0;
+        }
+
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #38bdf8;
+            margin-top: 1rem;
+            border: 1px solid var(--glass-border);
+            word-break: break-all;
+        }
+
+        /* Controls */
+        .controls {
+            padding: 2rem 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        button {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.8rem 2rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent-primary), #818cf8);
+            border: none;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        button.primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Custom intro slide */
+        .slide-intro {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 4rem;
+        }
+        .slide-intro h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .slide-intro p {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <header>
+        <div class="logo">ChickenGuy 🐔</div>
+        <div class="progress-indicator" id="progress">Slide 1 / 5</div>
+    </header>
+
+    <div class="slider-container">
+        
+        <!-- Slide 0: Intro -->
+        <div class="slide slide-intro active">
+            <h1>Kịch bản Thực Chiến</h1>
+            <p>Điều tra & Khắc phục sự cố <strong>rag_slow</strong><br>với Metrics, Traces & Logs</p>
+        </div>
+
+        <!-- Slide 1: Metrics -->
+        <div class="slide">
+            <div class="visual-panel">
+                <iframe src="submission/evidence/dashboard.html"></iframe>
+            </div>
+            <div class="script-panel">
+                <div class="step-badge">Bước 1: Giám sát Hệ Thống (Metrics)</div>
+                <h2>Dashboard Báo Cáo Tình Trạng</h2>
+                <div class="script-content">
+                    <p><strong>Thao tác:</strong> Mở file HTML Dashboard thực tế để xem 6 panel.</p>
+                    <div class="quote-box">
+                        "Nhóm em đã dựng thành công Dashboard gồm 6 panel chỉ số quan trọng."
+                        <br><br>
+                        "Ở trạng thái bình thường (như trên màn hình), hệ thống hoạt động rất mượt mà. Tuy nhiên, khi nhóm giả lập kịch bản sự cố tải cao, cảnh báo (Alert) lập tức báo động chỉ số <strong>Latency P95</strong> vọt lên quá ngưỡng."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Traces -->
+        <div class="slide">
+            <div class="visual-panel">
+                <img src="submission/evidence/06_trace_waterfall.png" alt="Trace Waterfall">
+            </div>
+            <div class="script-panel">
+                <div class="step-badge">Bước 2: Khoanh vùng vị trí (Traces)</div>
+                <h2>Phân Tích Trace Waterfall</h2>
+                <div class="script-content">
+                    <p><strong>Thao tác:</strong> Chuyển sang ảnh Langfuse Waterfall.</p>
+                    <div class="quote-box">
+                        "Đi sâu vào Langfuse Trace để khoanh vùng nguyên nhân. Nhìn vào biểu đồ Waterfall, dễ dàng thấy quá trình xử lý bị kẹt tại span <strong><code>retrieve</code></strong> (khâu RAG)."
+                        <br><br>
+                        "Khâu này kéo dài bất thường tới <strong>3.43 giây</strong>, trong khi việc gọi LLM (`generate`) chỉ tốn 0.15s. Tụi em xác định lỗi nằm ở phần RAG."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Logs -->
+        <div class="slide">
+            <div class="visual-panel">
+                <img src="submission/evidence/03_log_correlation_id.png" alt="Log Search">
+            </div>
+            <div class="script-panel">
+                <div class="step-badge">Bước 3: Chỉ ra lỗi (Logs)</div>
+                <h2>Truy Vết Bằng Correlation ID</h2>
+                <div class="script-content">
+                    <p><strong>Thao tác:</strong> Hiển thị Log JSON, chỉ vào trường correlation_id và PII.</p>
+                    <div class="code-block">
+                        correlation_id: "req-121a4481"<br>
+                        [REDACTED_EMAIL]
+                    </div>
+                    <div class="quote-box">
+                        "Từ trace, nhóm lấy được correlation_id là <strong>req-121a4481</strong> để lọc log."
+                        <br><br>
+                        "Qua đó tìm ra ngọn nguồn sự cố là do kịch bản giả lập <code>rag_slow</code> đã được kích hoạt ngầm làm chậm hàm retrieve. Đồng thời, qua log này cũng chứng minh nhóm đã che giấu PII thành công ([REDACTED_EMAIL])."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Fix -->
+        <div class="slide">
+            <div class="visual-panel" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+                <div style="text-align: center; color: #34d399;">
+                    <svg width="120" height="120" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 style="color: #34d399; margin-top: 1rem;">Hệ thống đã phục hồi</h2>
+                    <div class="code-block" style="color: #cbd5e1; text-align: left; margin-top: 2rem;">
+                        > POST /incidents/rag_slow/disable<br>
+                        <span style="color: #34d399;">[200 OK]</span> Incident disabled.<br><br>
+                        > Current Latency: <span style="color: #34d399;">155ms</span>
+                    </div>
+                </div>
+            </div>
+            <div class="script-panel">
+                <div class="step-badge">Bước 4: Giải pháp (Fix & Prevent)</div>
+                <h2>Khắc Phục & Phòng Ngừa</h2>
+                <div class="script-content">
+                    <p><strong>Thao tác:</strong> Trình bày hướng giải quyết cuối cùng.</p>
+                    <div class="quote-box">
+                        <strong>1. Xử lý tức thời (Mitigation):</strong><br>
+                        "Nhóm gọi API tắt trạm sự cố. Ngay lập tức, độ trễ hạ nhiệt và quay về mức chuẩn 155ms."
+                        <br><br>
+                        <strong>2. Biện pháp phòng ngừa (Prevention):</strong>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: #cbd5e1;">
+                            <li>Thiết lập <strong>Timeout</strong> cho khâu RAG (max 1500ms).</li>
+                            <li>Bổ sung <strong>Cache</strong> cho các câu hỏi tra cứu phổ biến.</li>
+                            <li>Tạo <strong>Alert tự động</strong> qua Slack nếu P95 vượt ngưỡng.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button id="prevBtn" disabled>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Quay lại
+        </button>
+        <button id="nextBtn" class="primary">
+            Tiếp theo
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progress = document.getElementById('progress');
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            prevBtn.disabled = currentSlide === 0;
+            
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerHTML = `Hoàn thành <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                nextBtn.classList.remove('primary');
+            } else {
+                nextBtn.innerHTML = `Tiếp theo <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+                nextBtn.classList.add('primary');
+            }
+
+            progress.textContent = `Trang ${currentSlide + 1} / ${slides.length}`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateSlides();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
