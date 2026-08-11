@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -99,7 +99,7 @@ def main() -> int:
     parser.add_argument(
         "--config",
         type=Path,
-        default=REPO_ROOT / "config" / "dashboard.yaml",
+        default=REPO_ROOT / "team/pham_thi_phuong_linh/dashboard.yaml",
         help="Đường dẫn tới dashboard YAML",
     )
     args = parser.parse_args()
